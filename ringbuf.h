@@ -7,8 +7,10 @@ struct rb {
     uint8_t mask;
     uint8_t write;
     uint8_t read;
-    int buffer[32];
+    uint8_t buffer[16];
 };
+
+void rb_init(struct rb* buff, uint8_t mask);
 
 uint8_t rb_read(struct rb* buff, uint8_t* c);
 

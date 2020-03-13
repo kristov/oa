@@ -1,15 +1,21 @@
 #include <ringbuf.h>
 
+void rb_init(struct rb* buff, uint8_t mask) {
+    buff->mask = mask;
+    buff->read = 0;
+    buff->write = 0;
+}
+
 uint8_t rb_read(struct rb* buff, uint8_t* c) {
     uint8_t read = buff->read;
     if (buff->write == read) {
-        return 0;
+        return 1;
     }
     *c = buff->buffer[read];
     read++;
     read = read & buff->mask;
     buff->read = read;
-    return 1;
+    return 0;
 }
 
 uint8_t rb_write(struct rb* buff, uint8_t c) {
@@ -17,9 +23,9 @@ uint8_t rb_write(struct rb* buff, uint8_t c) {
     write++;
     write = write & buff->mask;
     if (write == buff->read) {
-        return 0;
+        return 1;
     }
-    buff->buffer[write] = c;
+    buff->buffer[buff->write] = c;
     buff->write = write;
-    return 1;
+    return 0;
 }
