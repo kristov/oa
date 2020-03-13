@@ -1,24 +1,22 @@
 #include <uart.h>
 
-void uart_init(uint32_t baud) {
-	UCSR0A = (1 << U2X0);
-	UCSR0B = (0 << RXCIE0) |
-             (0 << TXCIE0) |
-             (0 << UDRIE0) |
-             (0 << RXEN0) |
-             (0 << TXEN0) |
-             (0 << UCSZ02) |
-             (0 << RXB80) |
-             (0 << TXB80);
-	UCSR0C = (0 << UMSEL01) |
-             (0 << UMSEL00) |
-             (0 << UPM01) |
-             (0 << UPM00) |
-             (0 << USBS0) |
-             (1 << UCSZ01) |
-             (1 << UCSZ00) |
-             (1 << UCPOL0);
-	UBRR0 = F_CPU / ((UCSR0A & (1 << U2X0)) ? 8 : 16) / baud - 1;
+#define F_CPU 16000000UL
+#define BAUD 57600
+
+#include <util/setbaud.h>
+
+void uart_init() {
+    UBRR0H = UBRRH_VALUE;
+    UBRR0L = UBRRL_VALUE;
+
+#if USE_2X
+    UCSR0A |= _BV(U2X0);
+#else
+    UCSR0A &= ~(_BV(U2X0));
+#endif
+
+    UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
 }
 
 uint8_t uart_putc(uint8_t c) {

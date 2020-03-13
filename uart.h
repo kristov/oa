@@ -3,7 +3,7 @@
 
 #include <avr/io.h>
 
-void uart_init(uint32_t baud);
+void uart_init();
 
 uint8_t uart_putc(uint8_t c);
 

@@ -1,14 +1,16 @@
 #include <ringbuf.h>
 #include <uart.h>
 
+uint8_t c;
+
 //ISR(USART_RX_vect) {
-//    uart_interrupt();
+//    uart_getc(&c);
+//    uart_putc(c);
 //}
 
 int main () {
-    uint8_t c;
-    uart_init(9600);
-    for (;;) {
+    uart_init();
+    while (1) {
         if (uart_getc(&c)) {
             continue;
         }

@@ -1,3 +1,4 @@
+DEVICE = /dev/ttyUSB0
 
 OBJECTS =
 OBJECTS += ringbuf.o
@@ -16,10 +17,12 @@ oa.hex: oa.bin
 	avr-objcopy -O ihex -R .eeprom oa.bin oa.hex
 
 install:
-	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:oa.hex
+	avrdude -F -V -c arduino -p ATMEGA328P -P $(DEVICE) -b 57600 -U flash:w:oa.hex
 
 clean:
 	rm -f oa.hex oa.bin $(OBJECTS)
 
 deps:
 	sudo apt-get install binutils-avr gcc-avr avr-libc avrdude
+
+# screen /dev/ttyUSB0 57600
