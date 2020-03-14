@@ -3,6 +3,7 @@ DEVICE = /dev/ttyUSB0
 OBJECTS =
 OBJECTS += ringbuf.o
 OBJECTS += uart.o
+OBJECTS += mini8fs.o
 OBJECTS += oa.o
 
 all: oa.hex
