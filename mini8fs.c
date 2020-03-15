@@ -56,3 +56,75 @@ uint8_t m8_find_cons_blks(uint8_t nrblocks) {
     } while (bc);
     return 0;
 }
+
+uint8_t* m8_link_cons_blocks(uint8_t nrblocks) {
+    uint8_t blockid = m8_find_cons_blks(nrblocks);
+    if (!blockid) {
+        return 0;
+    }
+    uint8_t* addr = m8_blk_addr(blockid);
+    uint8_t i = blockid * 2;
+    while (nrblocks) {
+        blockid++;
+        m8_memory[i] = 1; i++;
+        nrblocks--;
+        if (nrblocks) {
+            m8_memory[i] = blockid; i++;
+        }
+    };
+    return addr;
+}
+
+uint8_t m8_unlink_cons_blks(uint8_t blockid) {
+    uint8_t c = 0;
+    uint8_t i = 0;
+    while (blockid) {
+        i = blockid * 2;
+        m8_memory[i] = 0; i++;
+        blockid = m8_memory[i];
+        m8_memory[i] = 0;
+        c++;
+    };
+    return c;
+}
+
+uint8_t* m8_path_find(uint8_t blockid, uint8_t* path) {
+    uint8_t* part = path;
+    uint8_t strlen = 0;
+    uint8_t c = *part;
+    while (c != 0) {
+        if (c == '/') {
+            uint8_t* ptr = m8_blkc_find(blockid, path, strlen);
+            if (ptr == 0) {
+                return 0;
+            }
+            // test dir bit - return 0 unless set
+            blockid = ptr[M8_BLOCKID_BYTE];
+
+            part++;
+            path = part;
+            c = *part;
+            strlen = 0;
+            continue;
+        }
+        part++;
+        c = *part;
+        strlen++;
+    };
+    uint8_t* ptr = m8_blkc_find(blockid, path, strlen);
+    return ptr;
+}
+
+uint8_t m8_path_rm(uint8_t blockid, uint8_t* path) {
+    uint8_t* ptr = m8_path_find(blockid, path);
+    if (ptr == 0) {
+        return 1;
+    }
+    uint8_t i = 0;
+    for (i = 0; i < M8_FNAME_LEN; i++) {
+        ptr[i] = 0;
+    }
+    ptr[i] = 0; i++;
+    blockid = ptr[i];
+    return m8_unlink_cons_blks(blockid);
+}
