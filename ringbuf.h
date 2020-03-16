@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-struct rb;
-typedef uint8_t (*rbcb)(struct rb* buff);
-
 struct rb {
     uint8_t mask;
     uint8_t write;

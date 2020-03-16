@@ -35,7 +35,7 @@ uint8_t shell_init() {
     shc->si = si;
 
     struct queue* so = (struct queue*)m8_path_find(0, (uint8_t*)"dev/stdout");
-    if (!sh->so) {
+    if (!so) {
         uart_println((uint8_t*)"ERR: unable to find dev/stdout");
         return 1;
     }
