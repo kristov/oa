@@ -13,8 +13,9 @@
 #define M8_FILES_PER_BLOCK (M8_BLOCK_SIZE / M8_FENTRY_LEN)
 #define M8_STATUS_BYTE M8_FNAME_LEN
 #define M8_BLOCKID_BYTE (M8_FNAME_LEN + 1)
+#define M8_MEM_SIZE ((M8_NR_BLOCKS * M8_BLOCK_SIZE) + M8_FT_SIZE)
 
-extern uint8_t m8_memory[1088];
+extern uint8_t m8_memory[M8_MEM_SIZE];
 
 uint8_t* m8_blk_addr(uint8_t blockid);
 

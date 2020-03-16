@@ -8,7 +8,7 @@ OBJECTS += mini8fs.o
 OBJECTS += shell.o
 OBJECTS += oa.o
 
-MAPARGS = -Wl,-Map=myprog.map -Wl,--cref
+#MAPARGS = -Wl,-Map=myprog.map -Wl,--cref
 
 all: oa.hex
 

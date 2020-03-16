@@ -1,7 +1,7 @@
 #include <mini8fs.h>
 
 #define BIT_TEST(a, f)   ((a >> f) & 1)
-uint8_t m8_memory[1088];
+uint8_t m8_memory[M8_MEM_SIZE];
 
 uint8_t* m8_blk_addr(uint8_t blockid) {
     return &m8_memory[(blockid * M8_BLOCK_SIZE) + M8_FT_SIZE];
@@ -234,6 +234,14 @@ uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size) {
 }
 
 uint8_t m8_init() {
-    m8_mkdir(0, "dev");
-    m8_mkdir(0, "proc");
+    uint16_t i = 0;
+    for (i = 0; i < M8_MEM_SIZE; i++) {
+        m8_memory[i] = 0;
+    }
+    m8_memory[0] = 1;
+    uint8_t* nblock = m8_blk_addr(0);
+    m8_ent_setname(nblock, (uint8_t*)"..", 2);
+    nblock[M8_STATUS_BYTE] = 0xff;
+    nblock[M8_BLOCKID_BYTE] = 0;
+    return 0;
 }

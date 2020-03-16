@@ -59,12 +59,14 @@ uint8_t uart_init() {
     UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);
 
-    uint8_t* si = m8_newfile(0, "dev/stdin", 32);
+    uint8_t* si = m8_newfile(0, (uint8_t*)"dev/stdin", 32);
     if (!si) {
+        uart_println((uint8_t*)"ERR: unable to make dev/stdin");
         return 1;
     }
-    uint8_t* so = m8_newfile(0, "dev/stdout", 32);
+    uint8_t* so = m8_newfile(0, (uint8_t*)"dev/stdout", 32);
     if (!so) {
+        uart_println((uint8_t*)"ERR: unable to make dev/stdout");
         return 1;
     }
 

@@ -19,25 +19,24 @@ uint8_t shell_so_producer(struct rb* buff) {
 }
 
 uint8_t shell_init() {
-    uart_println("shell_init");
-    struct shell* sh = (struct shell*)m8_newfile(0, "proc/shell", 64);
+    struct shell* sh = (struct shell*)m8_newfile(0, (uint8_t*)"proc/shell", 64);
     if (!sh) {
-        uart_println("ERR: unable to create proc/shell");
+        uart_println((uint8_t*)"ERR: unable to create proc/shell");
         return 1;
     }
     shc = sh;
 
-    struct queue* si = (struct queue*)m8_path_find(0, "dev/stdin");
+    struct queue* si = (struct queue*)m8_path_find(0, (uint8_t*)"dev/stdin");
     if (!si) {
-        uart_println("ERR: unable to find dev/stdin");
+        uart_println((uint8_t*)"ERR: unable to find dev/stdin");
         return 1;
     }
     si->consumer = shell_si_consumer;
     shc->si = si;
 
-    struct queue* so = (struct queue*)m8_path_find(0, "dev/stdout");
+    struct queue* so = (struct queue*)m8_path_find(0, (uint8_t*)"dev/stdout");
     if (!sh->so) {
-        uart_println("ERR: unable to find dev/stdout");
+        uart_println((uint8_t*)"ERR: unable to find dev/stdout");
         return 1;
     }
     so->producer = shell_so_producer;
