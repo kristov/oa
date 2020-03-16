@@ -102,7 +102,7 @@ uint8_t* m8_blkc_dfree(uint8_t blockid) {
         uint8_t* blkaddr = m8_blk_addr(blockid);
         uint8_t b = M8_FILES_PER_BLOCK;
         while (b) {
-            if (!blkaddr[M8_FNAME_LEN]) {
+            if (!blkaddr[M8_STATUS_BYTE]) {
                 return blkaddr;
             }
             blkaddr += M8_FENTRY_LEN;
@@ -137,7 +137,7 @@ uint8_t* m8_path_find(uint8_t blockid, uint8_t* path) {
             if (ptr == 0) {
                 return 0;
             }
-            if (!BIT_TEST(ptr[M8_FNAME_LEN], 7)) {
+            if (!BIT_TEST(ptr[M8_STATUS_BYTE], 7)) {
                 return 0;
             }
             blockid = ptr[M8_BLOCKID_BYTE];
@@ -178,7 +178,7 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
             if (ptr == 0) {
                 return 0;
             }
-            if (!BIT_TEST(ptr[M8_FNAME_LEN], 7)) {
+            if (!BIT_TEST(ptr[M8_STATUS_BYTE], 7)) {
                 return 0;
             }
             blockid = ptr[M8_BLOCKID_BYTE];
@@ -197,7 +197,7 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
         return 0;
     }
     m8_ent_setname(entry, path, strlen);
-    entry[M8_FNAME_LEN] = 0xff;
+    entry[M8_STATUS_BYTE] = 0xff;
     uint8_t nblockid = m8_find_cons_blks(1);
     if (!nblockid) {
         return 0;
@@ -205,7 +205,9 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
     entry[M8_BLOCKID_BYTE] = nblockid;
     uint8_t* nblock = m8_link_cons_blks(nblockid, 1);
     m8_ent_setname(nblock, (uint8_t*)"..", 2);
-    nblock[M8_FNAME_LEN] = 0xff;
+    nblock[M8_STATUS_BYTE] = 0xff;
     nblock[M8_BLOCKID_BYTE] = blockid;
     return nblock;
 }
+
+//    (0+31)/32
