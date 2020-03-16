@@ -203,7 +203,7 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
         return 0;
     }
     entry[M8_BLOCKID_BYTE] = nblockid;
-    uint8_t* nblock = m8_blk_addr(nblockid);
+    uint8_t* nblock = m8_link_cons_blks(nblockid, 1);
     m8_ent_setname(nblock, (uint8_t*)"..", 2);
     nblock[M8_FNAME_LEN] = 0xff;
     nblock[M8_BLOCKID_BYTE] = blockid;

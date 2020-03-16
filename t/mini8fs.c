@@ -143,7 +143,13 @@ uint8_t test_ops_functions() {
 
     uint8_t* addr6 = m8_mkdir(0, (uint8_t*)"dev/init");
     pass += is_not_null(addr6, "new dir block returned");
+    pass += is_u8(m8_memory[14], 1, "new block 7 allocated for directory");
     pass += is_u8(memcmp(addr6, "..", 2), 0, "parent dir created correctly");
+
+    uint8_t* addr7 = m8_mkdir(0, (uint8_t*)"dev/overf");
+    pass += is_not_null(addr7, "new dir block returned");
+    pass += is_u8(m8_memory[16], 1, "new block 8 allocated for overflow");
+    pass += is_u8(memcmp(addr7, "..", 2), 0, "parent dir created correctly");
 
     return pass;
 }
