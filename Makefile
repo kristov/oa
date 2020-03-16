@@ -8,13 +8,15 @@ OBJECTS += mini8fs.o
 OBJECTS += shell.o
 OBJECTS += oa.o
 
+MAPARGS = -Wl,-Map=myprog.map -Wl,--cref
+
 all: oa.hex
 
 %.o: %.c
-	avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -I. -o $@ $<
+	avr-gcc -Wall -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -I. -o $@ $<
 
 oa.bin: $(OBJECTS)
-	avr-gcc -mmcu=atmega328p $(OBJECTS) -o oa.bin
+	avr-gcc -mmcu=atmega328p $(OBJECTS) $(MAPARGS) -o oa.bin
 	avr-size --format=avr --mcu=atmega328p oa.bin
 
 oa.hex: oa.bin
