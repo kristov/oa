@@ -21,12 +21,18 @@ uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen);
 
 uint8_t m8_find_cons_blks(uint8_t nrblocks);
 
-uint8_t* m8_link_cons_blocks(uint8_t nrblocks);
+uint8_t* m8_link_cons_blks(uint8_t blockid, uint8_t nrblocks);
+
+uint8_t* m8_blkc_extend(uint8_t blockid, uint8_t nrblocks);
+
+uint8_t* m8_blkc_dfree(uint8_t blockid);
 
 uint8_t m8_unlink_cons_blks(uint8_t blockid);
 
 uint8_t* m8_path_find(uint8_t blockid, uint8_t* path);
 
 uint8_t m8_path_rm(uint8_t blockid, uint8_t* path);
+
+uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path);
 
 #endif
