@@ -168,7 +168,7 @@ uint8_t m8_path_rm(uint8_t blockid, uint8_t* path) {
     return m8_unlink_cons_blks(blockid);
 }
 
-uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
+uint8_t* m8_newentry(uint8_t blockid, uint8_t* path) {
     uint8_t* part = path;
     uint8_t strlen = 0;
     uint8_t c = *part;
@@ -197,11 +197,19 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
         return 0;
     }
     m8_ent_setname(entry, path, strlen);
-    entry[M8_STATUS_BYTE] = 0xff;
+    return entry;
+}
+
+uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
     uint8_t nblockid = m8_find_cons_blks(1);
     if (!nblockid) {
         return 0;
     }
+    uint8_t* entry = m8_newentry(blockid, path);
+    if (!entry) {
+        return 0;
+    }
+    entry[M8_STATUS_BYTE] = 0xff;
     entry[M8_BLOCKID_BYTE] = nblockid;
     uint8_t* nblock = m8_link_cons_blks(nblockid, 1);
     m8_ent_setname(nblock, (uint8_t*)"..", 2);
@@ -210,4 +218,17 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
     return nblock;
 }
 
-//    (0+31)/32
+uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size) {
+    uint8_t nrblocks = (size + (M8_BLOCK_SIZE - 1)) / M8_BLOCK_SIZE;
+    uint8_t nblockid = m8_find_cons_blks(nrblocks);
+    if (!nblockid) {
+        return 0;
+    }
+    uint8_t* entry = m8_newentry(blockid, path);
+    if (!entry) {
+        return 0;
+    }
+    entry[M8_STATUS_BYTE] = 0xff;
+    entry[M8_BLOCKID_BYTE] = nblockid;
+    return m8_link_cons_blks(nblockid, 1);
+}

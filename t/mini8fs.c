@@ -17,22 +17,6 @@ uint8_t is_u8(uint8_t got, uint8_t exp, char* msg) {
     return 0;
 }
 
-uint8_t is_u32(uint32_t got, uint32_t exp, char* msg) {
-    if (got == exp) {
-        printf("ok: \"%s\"\n", msg);
-        return 1;
-    }
-    printf("bad: got %ld, exp %ld \"%s\"\n", got, exp, msg);
-    return 0;
-}
-
-/*
-uint8_t is_mem() {
-    uint8_t v;
-    scanf("%X", &v);
-}
-*/
-
 uint8_t is_null(uint8_t* got, char* msg) {
     if (got == NULL) {
         printf("ok: \"%s\"\n", msg);
@@ -150,6 +134,9 @@ uint8_t test_ops_functions() {
     pass += is_not_null(addr7, "new dir block returned");
     pass += is_u8(m8_memory[16], 1, "new block 8 allocated for overflow");
     pass += is_u8(memcmp(addr7, "..", 2), 0, "parent dir created correctly");
+
+    uint8_t* addr8 = m8_newfile(0, (uint8_t*)"dev/file0", 9);
+    pass += is_not_null(addr8, "new file created");
 
     return pass;
 }

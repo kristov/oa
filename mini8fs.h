@@ -36,4 +36,6 @@ uint8_t m8_path_rm(uint8_t blockid, uint8_t* path);
 
 uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path);
 
+uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size);
+
 #endif
