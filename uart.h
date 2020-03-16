@@ -3,10 +3,12 @@
 
 #include <avr/io.h>
 
-void uart_init();
+void uart_println(uint8_t* str);
 
 uint8_t uart_putc(uint8_t c);
 
 uint8_t uart_getc(uint8_t* c);
+
+uint8_t uart_init();
 
 #endif

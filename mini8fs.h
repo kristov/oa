@@ -1,7 +1,7 @@
 #ifndef MINI8FS_H
 #define MINI8FS_H
 
-#include <common.h>
+#include <stdint.h>
 
 #define M8_NR_BLOCKS 32
 #define M8_BLOCK_SIZE 32
@@ -37,5 +37,7 @@ uint8_t m8_path_rm(uint8_t blockid, uint8_t* path);
 uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path);
 
 uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size);
+
+uint8_t m8_init();
 
 #endif

@@ -2,8 +2,10 @@ DEVICE = /dev/ttyUSB0
 
 OBJECTS =
 OBJECTS += ringbuf.o
+OBJECTS += queue.o
 OBJECTS += uart.o
 OBJECTS += mini8fs.o
+OBJECTS += shell.o
 OBJECTS += oa.o
 
 all: oa.hex
@@ -13,6 +15,7 @@ all: oa.hex
 
 oa.bin: $(OBJECTS)
 	avr-gcc -mmcu=atmega328p $(OBJECTS) -o oa.bin
+	avr-size --format=avr --mcu=atmega328p oa.bin
 
 oa.hex: oa.bin
 	avr-objcopy -O ihex -R .eeprom oa.bin oa.hex
