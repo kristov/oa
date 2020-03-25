@@ -26,7 +26,7 @@ uint8_t shell_init() {
     }
     shc = sh;
 
-    struct queue* si = (struct queue*)m8_path_find(0, (uint8_t*)"dev/stdin");
+    struct queue* si = (struct queue*)m8_open(0, (uint8_t*)"dev/stdin");
     if (!si) {
         uart_println((uint8_t*)"ERR: unable to find dev/stdin");
         return 1;
@@ -34,7 +34,7 @@ uint8_t shell_init() {
     si->consumer = shell_si_consumer;
     shc->si = si;
 
-    struct queue* so = (struct queue*)m8_path_find(0, (uint8_t*)"dev/stdout");
+    struct queue* so = (struct queue*)m8_open(0, (uint8_t*)"dev/stdout");
     if (!so) {
         uart_println((uint8_t*)"ERR: unable to find dev/stdout");
         return 1;
