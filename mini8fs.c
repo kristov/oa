@@ -233,6 +233,14 @@ uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size) {
     return m8_link_cons_blks(nblockid, 1);
 }
 
+uint8_t* m8_open(uint8_t blockid, uint8_t* path) {
+    uint8_t* entry = m8_path_find(blockid, path);
+    if (!entry) {
+        return 0;
+    }
+    return m8_blk_addr(entry[M8_BLOCKID_BYTE]);
+}
+
 uint8_t m8_init() {
     uint16_t i = 0;
     for (i = 0; i < M8_MEM_SIZE; i++) {
