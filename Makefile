@@ -13,7 +13,7 @@ OBJECTS += oa.o
 all: oa.hex
 
 %.o: %.c
-	avr-gcc -Wall -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -I. -o $@ $<
+	avr-gcc -Wall -O1 -DF_CPU=16000000UL -mmcu=atmega328p -c -I. -o $@ $<
 
 oa.bin: $(OBJECTS)
 	avr-gcc -mmcu=atmega328p $(OBJECTS) $(MAPARGS) -o oa.bin
