@@ -1,10 +1,41 @@
+/**
+ * @file mini8fs.h
+ * @author Chris Eade
+ * @date 2020-03-26
+ * @brief Tiny in-memory file system
+ *
+ * This is a simple and small in-memory file system, designed primarily for
+ * micro controllers and other small computers.
+ */
+
 #ifndef MINI8FS_H
 #define MINI8FS_H
 
 #include <stdint.h>
 
+/**
+ * @brief The total number of available blocks
+ *
+ * This must be a multiple of 8. This number multiplied by the block size will
+ * be the total size of the file system excluding the file table (which is
+ * M8_NR_BLOCKS multiplied by 2).
+ */
 #define M8_NR_BLOCKS 32
+
+/**
+ * @brief The size of each block in bytes
+ *
+ * Each block must be big enough to hold a reasonable number of file entries
+ * for a directory block. The absolute minimum size of a block is 8 bytes, but
+ * this would be pretty useless and inefficient.
+ */
 #define M8_BLOCK_SIZE 32
+
+/**
+ * @brief The maximum allowed file name length
+ *
+ * If this is changed from 6 weird behaviour might happen.
+ */
 #define M8_FNAME_LEN 6
 
 #define M8_NR_BLOCKS_MASK (M8_NR_BLOCKS - 1)
@@ -14,6 +45,7 @@
 #define M8_STATUS_BYTE M8_FNAME_LEN
 #define M8_BLOCKID_BYTE (M8_FNAME_LEN + 1)
 #define M8_MEM_SIZE ((M8_NR_BLOCKS * M8_BLOCK_SIZE) + M8_FT_SIZE)
+#define M8_DIR_ENT_MASK (M8_FILES_PER_BLOCK - 1)
 
 extern uint8_t m8_memory[M8_MEM_SIZE];
 
