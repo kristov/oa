@@ -1,11 +1,8 @@
 #include <mini8fs.h>
 
-#define BIT_TEST(a, f)   ((a >> f) & 1)
-uint8_t m8_memory[M8_MEM_SIZE];
+#define BIT_TEST(a, f)        ((a >> f) & 1)
 
-uint8_t* m8_blk_addr(uint8_t blockid) {
-    return &m8_memory[(blockid * M8_BLOCK_SIZE) + M8_FT_SIZE];
-}
+uint8_t m8_memory[M8_MEM_SIZE];
 
 void m8_ent_setname(uint8_t* ent, uint8_t* name, uint8_t strlen) {
     uint8_t i = 0;
@@ -19,7 +16,7 @@ void m8_ent_setname(uint8_t* ent, uint8_t* name, uint8_t strlen) {
 
 uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen) {
     do {
-        uint8_t* blkaddr = m8_blk_addr(blockid);
+        uint8_t* blkaddr = M8_BLK_ADDR(blockid);
         uint8_t b = M8_FILES_PER_BLOCK;
         while (b) {
             uint8_t* str1 = blkaddr;
@@ -37,6 +34,23 @@ uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen) {
             }
             if (eq) {
                 return blkaddr;
+            }
+            blkaddr += M8_FENTRY_LEN;
+            b--;
+        }
+        blockid = m8_memory[(blockid * 2) + 1];
+    } while (blockid);
+    return 0;
+}
+
+uint8_t* m8_blkc_iter(uint8_t blockid, bci callback, void* usr) {
+    do {
+        uint8_t* blkaddr = M8_BLK_ADDR(blockid);
+        uint8_t b = M8_FILES_PER_BLOCK;
+        while (b) {
+            uint8_t* ret = callback(blkaddr, usr);
+            if (ret) {
+                return ret;
             }
             blkaddr += M8_FENTRY_LEN;
             b--;
@@ -69,7 +83,7 @@ uint8_t m8_find_cons_blks(uint8_t nrblocks) {
 }
 
 uint8_t* m8_link_cons_blks(uint8_t blockid, uint8_t nrblocks) {
-    uint8_t* addr = m8_blk_addr(blockid);
+    uint8_t* addr = M8_BLK_ADDR(blockid);
     uint8_t i = blockid * 2;
     while (nrblocks) {
         blockid++;
@@ -99,7 +113,7 @@ uint8_t* m8_blkc_extend(uint8_t blockid, uint8_t nrblocks) {
 uint8_t* m8_blkc_dfree(uint8_t blockid) {
     uint8_t lblockid;
     do {
-        uint8_t* blkaddr = m8_blk_addr(blockid);
+        uint8_t* blkaddr = M8_BLK_ADDR(blockid);
         uint8_t b = M8_FILES_PER_BLOCK;
         while (b) {
             if (!blkaddr[M8_STATUS_BYTE]) {
@@ -238,7 +252,7 @@ uint8_t* m8_open(uint8_t blockid, uint8_t* path) {
     if (!entry) {
         return 0;
     }
-    return m8_blk_addr(entry[M8_BLOCKID_BYTE]);
+    return M8_BLK_ADDR(entry[M8_BLOCKID_BYTE]);
 }
 
 uint8_t m8_init() {
@@ -247,7 +261,7 @@ uint8_t m8_init() {
         m8_memory[i] = 0;
     }
     m8_memory[0] = 1;
-    uint8_t* nblock = m8_blk_addr(0);
+    uint8_t* nblock = M8_BLK_ADDR(0);
     m8_ent_setname(nblock, (uint8_t*)"..", 2);
     nblock[M8_STATUS_BYTE] = 0xff;
     nblock[M8_BLOCKID_BYTE] = 0;

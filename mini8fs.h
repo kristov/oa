@@ -47,11 +47,15 @@
 #define M8_MEM_SIZE ((M8_NR_BLOCKS * M8_BLOCK_SIZE) + M8_FT_SIZE)
 #define M8_DIR_ENT_MASK (M8_FILES_PER_BLOCK - 1)
 
+#define M8_BLK_ADDR(blockid)  &m8_memory[(blockid * M8_BLOCK_SIZE) + M8_FT_SIZE];
+
 extern uint8_t m8_memory[M8_MEM_SIZE];
 
-uint8_t* m8_blk_addr(uint8_t blockid);
+typedef uint8_t* (*bci)(uint8_t* entry, void* usr);
 
 uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen);
+
+uint8_t* m8_blkc_iter(uint8_t blockid, bci callback, void* usr);
 
 uint8_t m8_find_cons_blks(uint8_t nrblocks);
 
