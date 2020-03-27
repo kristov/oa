@@ -5,27 +5,31 @@
 
 struct shell* SHP;
 
-uint8_t shell_putc(uint8_t c) {
-    struct queue* so = SHP->so;
-    return rb_write(&so->buff, c);
+uint8_t shell_interpret() {
+    // interpret the line buffer contents
+    // https://gist.github.com/parse/966049
+    return 0;
 }
 
 uint8_t shell_si_consumer(struct rb* buff) {
     uint8_t c;
+    struct queue* so = SHP->so;
     if (rb_read(buff, &c)) {
         return 1;
     }
     if (c == '\n') {
         SHP->linebuff[SHP->idx] = 0;
         SHP->idx = 0;
-        // interpret the line buffer contents
+        rb_write(&so->buff, (uint8_t)'\n');
+        rb_write(&so->buff, (uint8_t)'\r');
+        return shell_interpret();
     }
     if (SHP->idx == 58) {
         return 1;
     }
     SHP->linebuff[SHP->idx] = c;
     SHP->idx++;
-    return shell_putc(c);
+    return rb_write(&so->buff, c);
 }
 
 uint8_t shell_so_producer(struct rb* buff) {
