@@ -242,7 +242,7 @@ uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size) {
     if (!entry) {
         return 0;
     }
-    entry[M8_STATUS_BYTE] = 0xff;
+    entry[M8_STATUS_BYTE] = 0x7f;
     entry[M8_BLOCKID_BYTE] = nblockid;
     return m8_link_cons_blks(nblockid, 1);
 }
