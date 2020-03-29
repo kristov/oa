@@ -3,6 +3,8 @@
 #include <shell.h>
 #include <queue.h>
 
+struct queue* QUEUE[10];
+
 uint8_t fs_init() {
     uint8_t* addr;
     addr = m8_mkdir(0, (uint8_t*)"dev");
@@ -18,7 +20,7 @@ uint8_t fs_init() {
     return 0;
 }
 
-uint8_t init() {
+uint8_t oa_init() {
     if (m8_init()) {
         return 1;
     }
@@ -39,24 +41,51 @@ void loop_forever() {
     }
 }
 
+uint8_t* oa_fill_dev(uint8_t* entry, void* usr) {
+    uint8_t* idx = (uint8_t*)usr;
+    uint8_t eblkid = entry[M8_BLOCKID_BYTE];
+    if (entry[M8_STATUS_BYTE] != 0x7f) {
+        return 0;
+    }
+    QUEUE[*idx] = (struct queue*)M8_BLK_ADDR(eblkid);
+    *idx = *idx + 1;
+    return 0;
+}
+
+uint8_t oa_init_queues() {
+    uint8_t idx = 0;
+    for (idx = 0; idx < 10; idx++) {
+        QUEUE[idx] = 0;
+    }
+    uint8_t* dev = m8_path_find(0, (uint8_t*)"dev");
+    if (!dev) {
+        return 1;
+    }
+    uint8_t devblkid = dev[M8_BLOCKID_BYTE];
+    if (!devblkid) {
+        return 1;
+    }
+    idx = 0;
+    m8_blkc_iter(devblkid, oa_fill_dev, (void*)&idx);
+    return 0;
+}
+
 int main () {
-    if (init()) {
+    uart_println((uint8_t*)"oa: v0.1");
+    if (oa_init()) {
         uart_println((uint8_t*)"ERR: init() failed");
     }
-    uart_println((uint8_t*)"oa: v0.1");
-    struct queue* si = (struct queue*)m8_open(0, (uint8_t*)"dev/stdin");
-    if (!si) {
-        uart_println((uint8_t*)"ERR: unable to find dev/stdin");
-        loop_forever();
+    if (oa_init_queues()) {
+        uart_println((uint8_t*)"ERR: init() failed");
     }
-    struct queue* so = (struct queue*)m8_open(0, (uint8_t*)"dev/stdout");
-    if (!so) {
-        uart_println((uint8_t*)"ERR: unable to find dev/stdout");
-        loop_forever();
-    }
-
+    uint8_t idx = 0;
     while (1) {
-        queue_process(si);
-        queue_process(so);
+        for (idx = 0; idx < 10; idx++) {
+            if (!QUEUE[idx]) {
+                break;
+            }
+            queue_process(QUEUE[idx]);
+        }
     }
+    return 0;
 }
