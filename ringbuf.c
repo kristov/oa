@@ -26,9 +26,9 @@ uint8_t rb_write(struct rb* buff, uint8_t c) {
 
 uint8_t rb_space(struct rb* buff) {
     if (buff->read > buff->write) {
-        return (buff->read - buff->write) - 1;
+        return buff->mask - ((buff->read - buff->write) - 1);
     }
-    return buff->write - buff->read;
+    return buff->mask - (buff->write - buff->read);
 }
 
 uint8_t rb_init(struct rb* buff, uint8_t mask) {
