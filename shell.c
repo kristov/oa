@@ -47,6 +47,8 @@ uint8_t shell_si_consumer(struct rb* buff) {
     }
     if (c == CHAR_CRETURN) {
         uint8_t ret = shell_interpret(sob);
+        SHP->write = 0;
+        SHP->read = 0;
         SHP->linebuff[SHP->write] = CHAR_NEWLINE;
         SHP->write++;
         SHP->linebuff[SHP->write] = CHAR_CRETURN;
@@ -56,13 +58,22 @@ uint8_t shell_si_consumer(struct rb* buff) {
         return ret;
     }
     if (c == CHAR_BSPACE) {
+        if (SHP->write == 0) {
+            return 1;
+        }
         SHP->linebuff[SHP->write] = 0;
+        if (SHP->write == SHP->read) {
+            SHP->read--;
+        }
         SHP->write--;
-        SHP->read = 0;
-        rb_write(sob, (uint8_t)'\r');
+        rb_write(&so->buff, 0x7f);
+        rb_write(&so->buff, 0x1b);
+        rb_write(&so->buff, 0x5b);
+        rb_write(&so->buff, 0x44);
+        return 0;
     }
     if (SHP->write == SHELL_LINEBUF_LIMIT) {
-        return 1;
+        return 0;
     }
     SHP->linebuff[SHP->write] = c;
     SHP->write++;
