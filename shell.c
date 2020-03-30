@@ -66,7 +66,10 @@ uint8_t shell_si_consumer(struct rb* buff) {
             SHP->read--;
         }
         SHP->write--;
-        rb_write(&so->buff, 0x7f);
+        rb_write(&so->buff, 0x1b);
+        rb_write(&so->buff, 0x5b);
+        rb_write(&so->buff, 0x44);
+        rb_write(&so->buff, 0x20);
         rb_write(&so->buff, 0x1b);
         rb_write(&so->buff, 0x5b);
         rb_write(&so->buff, 0x44);
