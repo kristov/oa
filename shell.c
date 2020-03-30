@@ -3,22 +3,17 @@
 #include <queue.h>
 #include <uart.h>
 
+#define CHAR_NEWLINE 0x0a
+#define CHAR_CRETURN 0x0d
+#define CHAR_BSPACE 0x7f
+
 struct shell* SHP;
 
-uint8_t shell_prompt(struct rb* sob) {
-    rb_write(sob, (uint8_t)'$');
-    return rb_write(sob, (uint8_t)' ');
-}
-
-uint8_t shell_println(struct rb* sob, uint8_t* str) {
-    uint8_t c = *str;
-    while (c) {
-        rb_write(sob, c);
-        str++;
-        c = *str;
-    }
-    rb_write(sob, (uint8_t)'\n');
-    return rb_write(sob, (uint8_t)'\r');
+void shell_prompt() {
+    SHP->linebuff[SHP->write] = '$';
+    SHP->write++;
+    SHP->linebuff[SHP->write] = ' ';
+    SHP->write++;
 }
 
 uint8_t shell_interpret(struct rb* sob) {
@@ -32,14 +27,14 @@ uint8_t shell_interpret(struct rb* sob) {
             if (sidx == idx) {
                 continue;
             }
-            shell_println(sob, &SHP->linebuff[sidx]);
+//            shell_println(sob, &SHP->linebuff[sidx]);
             sidx = idx + 1;
         }
     }
     if (sidx == idx) {
         return 0;
     }
-    shell_println(sob, &SHP->linebuff[sidx]);
+//    shell_println(sob, &SHP->linebuff[sidx]);
     return 0;
 }
 
@@ -50,17 +45,17 @@ uint8_t shell_si_consumer(struct rb* buff) {
     if (rb_read(buff, &c)) {
         return 1;
     }
-    if (c == 0x0d) { // r
-        SHP->linebuff[SHP->write] = 0;
-        rb_write(sob, (uint8_t)'\n');
-        rb_write(sob, (uint8_t)'\r');
+    if (c == CHAR_CRETURN) {
         uint8_t ret = shell_interpret(sob);
-        SHP->write = 0;
-        SHP->read = 0;
-        shell_prompt(sob);
+        SHP->linebuff[SHP->write] = CHAR_NEWLINE;
+        SHP->write++;
+        SHP->linebuff[SHP->write] = CHAR_CRETURN;
+        SHP->write++;
+        SHP->linebuff[SHP->write] = 0;
+        SHP->write++;
         return ret;
     }
-    if (c == 0x7f) {
+    if (c == CHAR_BSPACE) {
         SHP->linebuff[SHP->write] = 0;
         SHP->write--;
         SHP->read = 0;
@@ -76,11 +71,14 @@ uint8_t shell_si_consumer(struct rb* buff) {
 
 uint8_t shell_so_producer(struct rb* buff) {
     if (SHP->write == SHP->read) {
-        return 1;
+        return 0;
     }
     uint8_t ret = rb_write(buff, SHP->linebuff[SHP->read]);
+    if (ret) {
+        return 1;
+    }
     SHP->read++;
-    return ret;
+    return 0;
 }
 
 uint8_t shell_init() {

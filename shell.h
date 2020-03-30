@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define SHELL_LINEBUF_SIZE 58
-#define SHELL_LINEBUF_LIMIT (SHELL_LINEBUF_SIZE - 1)
+#define SHELL_LINEBUF_LIMIT (SHELL_LINEBUF_SIZE - 3)
 
 struct shell {
     struct queue* si;
