@@ -25,10 +25,12 @@ uint8_t uart_producer(struct rb* buff) {
 
 uint8_t uart_consumer(struct rb* buff) {
     uint8_t c;
-    if (rb_read(buff, &c)) {
-        return 1;
+    while (1) {
+        if (rb_read(buff, &c)) {
+            break;
+        }
+        while (uart_putc(c));
     }
-    while (uart_putc(c));
     return 0;
 }
 
