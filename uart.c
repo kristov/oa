@@ -5,6 +5,14 @@
 #define F_CPU 16000000UL
 #define BAUD 57600
 #include <util/setbaud.h>
+#include <avr/interrupt.h>
+
+struct rb* sirb = 0;
+
+ISR(USART_RX_vect) {
+    uint8_t c = UDR0;
+    rb_write(sirb, c);
+}
 
 void uart_println(uint8_t* str) {
     while (*str) {
@@ -57,7 +65,7 @@ uint8_t uart_init() {
     UCSR0A &= ~(_BV(U2X0));
 #endif
     UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0) | _BV(RXCIE0);
 
     struct queue* si = (struct queue*)m8_newfile(0, (uint8_t*)"dev/stdin", 32);
     if (!si) {
@@ -71,8 +79,11 @@ uint8_t uart_init() {
         return 1;
     }
 
-    queue_init(si, uart_producer, 0);
+    sirb = &si->buff;
+    queue_init(si, 0, 0);
     queue_init(so, 0, uart_consumer);
+
+    sei();
 
     return 0;
 }
