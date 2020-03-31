@@ -18,3 +18,7 @@ The OS starts with three builtin queues:
 Writing an address to finit causes the kernel to call that function pointer. It is expected that this function will initialize a "program" by loading other functions into memory and set up more queues in the system.
 
 For example a shell program would attach a callback to the consumer of the stdin queue (overriding the default "echo" consumer) as well as set up a chunk of memory as a line buffer.
+
+## Motivation
+
+Operating systems are usually preemptive multitasking. They were born from a time when the usual mode 
