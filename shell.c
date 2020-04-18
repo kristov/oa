@@ -2,6 +2,7 @@
 #include <mini8fs.h>
 #include <queue.h>
 #include <uart.h>
+#include <avr/pgmspace.h>
 
 #define CHAR_NEWLINE 0x0a
 #define CHAR_CRETURN 0x0d
@@ -9,30 +10,54 @@
 
 struct shell* SHP;
 
+const struct shell_bi builtins[] PROGMEM = {
+    {(uint8_t*)"ls", shell_bi_ls}
+};
+
+uint8_t shell_bi_ls(uint8_t argc, char** argv) {
+    return 1;
+}
+
 void shell_prompt(struct rb* sob) {
     rb_write(sob, '$');
     rb_write(sob, ' ');
 }
 
-uint8_t shell_interpret(struct rb* sob) {
-    // interpret the line buffer contents
-    // https://gist.github.com/parse/966049
-    uint8_t idx = 0;
-    uint8_t sidx = 0;
-    for (idx = 0; idx < SHP->write; idx++) {
-        if (SHP->linebuff[idx] == ' ') {
-            SHP->linebuff[idx] = 0;
-            if (sidx == idx) {
-                continue;
-            }
-//            shell_println(sob, &SHP->linebuff[sidx]);
-            sidx = idx + 1;
+uint8_t shell_streq(uint8_t* str1, uint8_t* str2) {
+    while (*str1 && *str2) {
+        if (*str1 != *str2) {
+            return 1;
         }
+        str1++;
+        str2++;
     }
-    if (sidx == idx) {
+    if ((*str1 == 0) && (*str2 == 0)) {
         return 0;
     }
-//    shell_println(sob, &SHP->linebuff[sidx]);
+    return 1;
+}
+
+uint8_t shell_interpret(struct rb* sob) {
+    // https://gist.github.com/parse/966049
+    uint8_t start = 0;
+    uint8_t end = 0;
+    for (end = 0; end < SHP->write; end++) {
+        if (SHP->linebuff[end] == 0) {
+            break;
+        }
+    }
+    if (start == end) {
+        return 1;
+    }
+    uint8_t i = 0;
+    struct shell_bi bi;
+    for (i = 0; i < 1; i++) {
+        bi = builtins[i];
+        if (shell_streq(bi.cmd, &SHP->linebuff[start])) {
+            continue;
+        }
+        bi.handler(0, 0);
+    }
     return 0;
 }
 
@@ -78,6 +103,7 @@ uint8_t shell_si_consumer(struct rb* buff) {
     }
     SHP->linebuff[SHP->write] = c;
     SHP->write++;
+    SHP->linebuff[SHP->write] = 0;
     return rb_write(sob, c);
 }
 
