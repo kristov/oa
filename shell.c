@@ -112,7 +112,10 @@ uint8_t shell_so_producer(struct rb* buff) {
 }
 
 uint8_t shell_init() {
-    struct shell* sh = (struct shell*)m8_newfile(0, (uint8_t*)"proc/shell", 64);
+    uint8_t* addr;
+    addr = m8_mkdir(0, (uint8_t*)"proc/shell");
+
+    SHP = (struct shell*)m8_newfile(0, (uint8_t*)"proc/shell", 64);
     if (!sh) {
         uart_println((uint8_t*)"ERR: unable to create proc/shell");
         return 1;

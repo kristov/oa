@@ -1,9 +1,11 @@
 DEVICE = /dev/ttyUSB0
 
 OBJECTS =
+OBJECTS += coroutine.o
 OBJECTS += ringbuf.o
 OBJECTS += queue.o
 OBJECTS += uart.o
+OBJECTS += blk.o
 OBJECTS += mini8fs.o
 OBJECTS += shell.o
 OBJECTS += oa.o

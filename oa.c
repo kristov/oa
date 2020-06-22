@@ -3,7 +3,12 @@
 #include <shell.h>
 #include <queue.h>
 
-struct queue* QUEUE[10];
+struct proc {
+    void* routine;
+    uint8_t stack[126];
+};
+
+struct proc* PROCS[2];
 
 uint8_t fs_init() {
     uint8_t* addr;
