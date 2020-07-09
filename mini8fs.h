@@ -12,24 +12,7 @@
 #define MINI8FS_H
 
 #include <stdint.h>
-
-/**
- * @brief The total number of available blocks
- *
- * This must be a multiple of 8. This number multiplied by the block size will
- * be the total size of the file system excluding the file table (which is
- * M8_NR_BLOCKS multiplied by 2).
- */
-#define M8_NR_BLOCKS 32
-
-/**
- * @brief The size of each block in bytes
- *
- * Each block must be big enough to hold a reasonable number of file entries
- * for a directory block. The absolute minimum size of a block is 8 bytes, but
- * this would be pretty useless and inefficient.
- */
-#define M8_BLOCK_SIZE 32
+#include <blk.h>
 
 /**
  * @brief The maximum allowed file name length
@@ -38,34 +21,19 @@
  */
 #define M8_FNAME_LEN 6
 
-#define M8_NR_BLOCKS_MASK (M8_NR_BLOCKS - 1)
-#define M8_FT_SIZE (M8_NR_BLOCKS * 2)
 #define M8_FENTRY_LEN (M8_FNAME_LEN + 2)
-#define M8_FILES_PER_BLOCK (M8_BLOCK_SIZE / M8_FENTRY_LEN)
+#define M8_FILES_PER_BLOCK (BLK_BLOCK_SIZE / M8_FENTRY_LEN)
 #define M8_STATUS_BYTE M8_FNAME_LEN
 #define M8_BLOCKID_BYTE (M8_FNAME_LEN + 1)
-#define M8_MEM_SIZE ((M8_NR_BLOCKS * M8_BLOCK_SIZE) + M8_FT_SIZE)
 #define M8_DIR_ENT_MASK (M8_FILES_PER_BLOCK - 1)
-
-#define M8_BLK_ADDR(blockid)  &m8_memory[(blockid * M8_BLOCK_SIZE) + M8_FT_SIZE];
-
-extern uint8_t m8_memory[M8_MEM_SIZE];
 
 typedef uint8_t* (*bci)(uint8_t* entry, void* usr);
 
-uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen);
+uint8_t* m8_find(uint8_t blockid, uint8_t* name, uint8_t strlen);
 
 uint8_t* m8_blkc_iter(uint8_t blockid, bci callback, void* usr);
 
-uint8_t m8_find_cons_blks(uint8_t nrblocks);
-
-uint8_t* m8_link_cons_blks(uint8_t blockid, uint8_t nrblocks);
-
-uint8_t* m8_blkc_extend(uint8_t blockid, uint8_t nrblocks);
-
-uint8_t* m8_blkc_dfree(uint8_t blockid);
-
-uint8_t m8_unlink_cons_blks(uint8_t blockid);
+uint8_t* m8_dfree(uint8_t blockid);
 
 /** @brief Find a file or directory entry by path
  *

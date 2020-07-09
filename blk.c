@@ -50,3 +50,26 @@ uint8_t blk_unlink_cons_blks(uint8_t blkid) {
     };
     return c;
 }
+
+uint8_t* blk_extend(uint8_t blockid, uint8_t nrblocks) {
+    uint8_t lblockid;
+    do {
+        lblockid = blockid;
+        blockid = blk_memory[(blockid * 2) + 1];
+    } while (blockid);
+    blockid = blk_find_cons_blks(nrblocks);
+    if (!blockid) {
+        return 0;
+    }
+    blk_memory[(lblockid * 2) + 1] = blockid;
+    return blk_link_cons_blks(blockid, nrblocks);
+}
+
+uint8_t blk_init() {
+    uint16_t i = 0;
+    for (i = 0; i < BLK_MEM_SIZE; i++) {
+        blk_memory[i] = 0;
+    }
+    blk_memory[0] = 1;
+    return 0;
+}

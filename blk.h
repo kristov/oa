@@ -81,4 +81,16 @@ uint8_t* blk_link_cons_blks(uint8_t blkid, uint8_t nrblks);
  *
  */
 uint8_t blk_unlink_cons_blks(uint8_t blkid);
+
+/**
+ * @brief Extend a list of blocks
+ *
+ */
+uint8_t* blk_extend(uint8_t blockid, uint8_t nrblocks);
+
+/**
+ * @brief Init block memory
+ *
+ */
+uint8_t blk_init();
 #endif

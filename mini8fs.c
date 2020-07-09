@@ -2,8 +2,6 @@
 
 #define BIT_TEST(a, f)        ((a >> f) & 1)
 
-uint8_t m8_memory[M8_MEM_SIZE];
-
 void m8_ent_setname(uint8_t* ent, uint8_t* name, uint8_t strlen) {
     uint8_t i = 0;
     for (i = 0; i < M8_FNAME_LEN; i++) {
@@ -14,9 +12,9 @@ void m8_ent_setname(uint8_t* ent, uint8_t* name, uint8_t strlen) {
     }
 }
 
-uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen) {
+uint8_t* m8_find(uint8_t blockid, uint8_t* name, uint8_t strlen) {
     do {
-        uint8_t* blkaddr = M8_BLK_ADDR(blockid);
+        uint8_t* blkaddr = BLK_ADDR(blockid);
         uint8_t b = M8_FILES_PER_BLOCK;
         while (b) {
             uint8_t* str1 = blkaddr;
@@ -38,14 +36,14 @@ uint8_t* m8_blkc_find(uint8_t blockid, uint8_t* name, uint8_t strlen) {
             blkaddr += M8_FENTRY_LEN;
             b--;
         }
-        blockid = m8_memory[(blockid * 2) + 1];
+        blockid = blk_memory[(blockid * 2) + 1];
     } while (blockid);
     return 0;
 }
 
 uint8_t* m8_blkc_iter(uint8_t blockid, bci callback, void* usr) {
     do {
-        uint8_t* blkaddr = M8_BLK_ADDR(blockid);
+        uint8_t* blkaddr = BLK_ADDR(blockid);
         uint8_t b = M8_FILES_PER_BLOCK;
         while (b) {
             uint8_t* ret = callback(blkaddr, usr);
@@ -55,7 +53,7 @@ uint8_t* m8_blkc_iter(uint8_t blockid, bci callback, void* usr) {
             blkaddr += M8_FENTRY_LEN;
             b--;
         }
-        blockid = m8_memory[(blockid * 2) + 1];
+        blockid = blk_memory[(blockid * 2) + 1];
     } while (blockid);
     return 0;
 }
@@ -65,10 +63,10 @@ uint8_t m8_find_cons_blks(uint8_t nrblocks) {
     uint8_t bc = 0;
     uint8_t nb = nrblocks;
     do {
-        if (m8_memory[bc * 2]) {
+        if (blk_memory[bc * 2]) {
             nb = nrblocks;
             bc++;
-            bc = bc & M8_NR_BLOCKS_MASK;
+            bc = bc & BLK_NR_BLOCKS_MASK;
             bs = bc;
             continue;
         }
@@ -77,43 +75,15 @@ uint8_t m8_find_cons_blks(uint8_t nrblocks) {
             return bs;
         }
         bc++;
-        bc = bc & M8_NR_BLOCKS_MASK;
+        bc = bc & BLK_NR_BLOCKS_MASK;
     } while (bc);
     return 0;
 }
 
-uint8_t* m8_link_cons_blks(uint8_t blockid, uint8_t nrblocks) {
-    uint8_t* addr = M8_BLK_ADDR(blockid);
-    uint8_t i = blockid * 2;
-    while (nrblocks) {
-        blockid++;
-        m8_memory[i] = 1; i++;
-        nrblocks--;
-        if (nrblocks) {
-            m8_memory[i] = blockid; i++;
-        }
-    };
-    return addr;
-}
-
-uint8_t* m8_blkc_extend(uint8_t blockid, uint8_t nrblocks) {
+uint8_t* m8_dfree(uint8_t blockid) {
     uint8_t lblockid;
     do {
-        lblockid = blockid;
-        blockid = m8_memory[(blockid * 2) + 1];
-    } while (blockid);
-    blockid = m8_find_cons_blks(nrblocks);
-    if (!blockid) {
-        return 0;
-    }
-    m8_memory[(lblockid * 2) + 1] = blockid;
-    return m8_link_cons_blks(blockid, nrblocks);
-}
-
-uint8_t* m8_blkc_dfree(uint8_t blockid) {
-    uint8_t lblockid;
-    do {
-        uint8_t* blkaddr = M8_BLK_ADDR(blockid);
+        uint8_t* blkaddr = BLK_ADDR(blockid);
         uint8_t b = M8_FILES_PER_BLOCK;
         while (b) {
             if (!blkaddr[M8_STATUS_BYTE]) {
@@ -123,22 +93,9 @@ uint8_t* m8_blkc_dfree(uint8_t blockid) {
             b--;
         }
         lblockid = blockid;
-        blockid = m8_memory[(blockid * 2) + 1];
+        blockid = blk_memory[(blockid * 2) + 1];
     } while (blockid);
-    return m8_blkc_extend(lblockid, 1);
-}
-
-uint8_t m8_unlink_cons_blks(uint8_t blockid) {
-    uint8_t c = 0;
-    uint8_t i = 0;
-    while (blockid) {
-        i = blockid * 2;
-        m8_memory[i] = 0; i++;
-        blockid = m8_memory[i];
-        m8_memory[i] = 0;
-        c++;
-    };
-    return c;
+    return blk_extend(lblockid, 1);
 }
 
 uint8_t* m8_path_find(uint8_t blockid, uint8_t* path) {
@@ -147,7 +104,7 @@ uint8_t* m8_path_find(uint8_t blockid, uint8_t* path) {
     uint8_t c = *part;
     while (c != 0) {
         if (c == '/') {
-            uint8_t* ptr = m8_blkc_find(blockid, path, strlen);
+            uint8_t* ptr = m8_find(blockid, path, strlen);
             if (ptr == 0) {
                 return 0;
             }
@@ -165,7 +122,7 @@ uint8_t* m8_path_find(uint8_t blockid, uint8_t* path) {
         c = *part;
         strlen++;
     };
-    return m8_blkc_find(blockid, path, strlen);
+    return m8_find(blockid, path, strlen);
 }
 
 uint8_t m8_path_rm(uint8_t blockid, uint8_t* path) {
@@ -179,7 +136,7 @@ uint8_t m8_path_rm(uint8_t blockid, uint8_t* path) {
     }
     ptr[i] = 0; i++;
     blockid = ptr[i];
-    return m8_unlink_cons_blks(blockid);
+    return blk_unlink_cons_blks(blockid);
 }
 
 uint8_t* m8_newentry(uint8_t blockid, uint8_t* path) {
@@ -188,7 +145,7 @@ uint8_t* m8_newentry(uint8_t blockid, uint8_t* path) {
     uint8_t c = *part;
     while (c != 0) {
         if (c == '/') {
-            uint8_t* ptr = m8_blkc_find(blockid, path, strlen);
+            uint8_t* ptr = m8_find(blockid, path, strlen);
             if (ptr == 0) {
                 return 0;
             }
@@ -206,7 +163,7 @@ uint8_t* m8_newentry(uint8_t blockid, uint8_t* path) {
         c = *part;
         strlen++;
     };
-    uint8_t* entry = m8_blkc_dfree(blockid);
+    uint8_t* entry = m8_dfree(blockid);
     if (!entry) {
         return 0;
     }
@@ -215,7 +172,7 @@ uint8_t* m8_newentry(uint8_t blockid, uint8_t* path) {
 }
 
 uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
-    uint8_t nblockid = m8_find_cons_blks(1);
+    uint8_t nblockid = blk_find_cons_blks(1);
     if (!nblockid) {
         return 0;
     }
@@ -225,7 +182,7 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
     }
     entry[M8_STATUS_BYTE] = 0xff;
     entry[M8_BLOCKID_BYTE] = nblockid;
-    uint8_t* nblock = m8_link_cons_blks(nblockid, 1);
+    uint8_t* nblock = blk_link_cons_blks(nblockid, 1);
     m8_ent_setname(nblock, (uint8_t*)"..", 2);
     nblock[M8_STATUS_BYTE] = 0xff;
     nblock[M8_BLOCKID_BYTE] = blockid;
@@ -233,8 +190,8 @@ uint8_t* m8_mkdir(uint8_t blockid, uint8_t* path) {
 }
 
 uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size) {
-    uint8_t nrblocks = (size + (M8_BLOCK_SIZE - 1)) / M8_BLOCK_SIZE;
-    uint8_t nblockid = m8_find_cons_blks(nrblocks);
+    uint8_t nrblocks = (size + (BLK_BLOCK_SIZE - 1)) / BLK_BLOCK_SIZE;
+    uint8_t nblockid = blk_find_cons_blks(nrblocks);
     if (!nblockid) {
         return 0;
     }
@@ -244,7 +201,7 @@ uint8_t* m8_newfile(uint8_t blockid, uint8_t* path, uint16_t size) {
     }
     entry[M8_STATUS_BYTE] = 0x7f;
     entry[M8_BLOCKID_BYTE] = nblockid;
-    return m8_link_cons_blks(nblockid, 1);
+    return blk_link_cons_blks(nblockid, 1);
 }
 
 uint8_t* m8_open(uint8_t blockid, uint8_t* path) {
@@ -252,16 +209,12 @@ uint8_t* m8_open(uint8_t blockid, uint8_t* path) {
     if (!entry) {
         return 0;
     }
-    return M8_BLK_ADDR(entry[M8_BLOCKID_BYTE]);
+    return BLK_ADDR(entry[M8_BLOCKID_BYTE]);
 }
 
 uint8_t m8_init() {
-    uint16_t i = 0;
-    for (i = 0; i < M8_MEM_SIZE; i++) {
-        m8_memory[i] = 0;
-    }
-    m8_memory[0] = 1;
-    uint8_t* nblock = M8_BLK_ADDR(0);
+    blk_init();
+    uint8_t* nblock = BLK_ADDR(0);
     m8_ent_setname(nblock, (uint8_t*)"..", 2);
     nblock[M8_STATUS_BYTE] = 0xff;
     nblock[M8_BLOCKID_BYTE] = 0;
